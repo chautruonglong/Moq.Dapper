@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
+using Moq.Dapper.TypeHandlers;
 using Moq.Language.Flow;
 using Moq.Protected;
 
@@ -13,6 +14,11 @@ namespace Moq.Dapper
 {
     public static class DbConnectionInterfaceMockExtensions
     {
+        static DbConnectionInterfaceMockExtensions()
+        {
+            SqlMapper.AddTypeHandler(new GuidTypeHandler());
+        }
+        
         public static ISetup<IDbConnection, TResult> SetupDapper<TResult>(this Mock<IDbConnection> mock, Expression<Func<IDbConnection, TResult>> expression)
         {
             var call = expression.Body as MethodCallExpression;

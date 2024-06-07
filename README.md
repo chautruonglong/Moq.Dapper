@@ -1,5 +1,6 @@
 # Moq.Dapper
 Moq extensions for Dapper methods.
+Forked from https://github.com/UnoSD/Moq.Dapper and modified by [chautruonglong](https://github.com/chautruonglong)
 
 [![NuGet Version and Downloads count](https://buildstats.info/nuget/Moq.Dapper)](https://www.nuget.org/packages/Moq.Dapper)
 [![](https://dev.azure.com/unosd/Moq.Dapper/_apis/build/status/Publish%20to%20NuGet)]()

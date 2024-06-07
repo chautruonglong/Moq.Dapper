@@ -12,7 +12,9 @@ namespace Moq.Dapper
         {
             var dataTable = new DataTable();
 
-            if (tableType.IsPrimitive || tableType == typeof(string))
+            if (tableType.IsPrimitive ||
+                tableType == typeof(string) ||
+                tableType == typeof(Guid))
             {
                 dataTable.Columns.Add();
 

@@ -28,7 +28,7 @@ namespace Moq.Dapper.Test
             Assert.That(actual.Count, Is.EqualTo(expected.Length));
             Assert.That(actual, Is.EquivalentTo(expected));
         }
-
+        
         [Test]
         public void QueryAsyncGenericUsingDbConnectionInterface()
         {
@@ -40,6 +40,38 @@ namespace Moq.Dapper.Test
                       .ReturnsAsync(expected);
 
             var actual = connection.Object.QueryAsync<int>("").GetAwaiter().GetResult().ToList();
+
+            Assert.That(actual.Count, Is.EqualTo(expected.Length));
+            Assert.That(actual, Is.EquivalentTo(expected));
+        }
+        
+        [Test]
+        public void QueryAsyncGenericForGuidType()
+        {
+            var connection = new Mock<DbConnection>();
+            var expected = new[] { Guid.NewGuid(), Guid.NewGuid() };
+
+            connection
+                .SetupDapperAsync(c => c.QueryAsync<Guid>(It.IsAny<string>(), null, null, null, null))
+                .ReturnsAsync(expected);
+
+            var actual = connection.Object.QueryAsync<Guid>("").GetAwaiter().GetResult().ToList();
+
+            Assert.That(actual.Count, Is.EqualTo(expected.Length));
+            Assert.That(actual, Is.EquivalentTo(expected));
+        }
+        
+        [Test]
+        public void QueryAsyncGenericUsingDbConnectionInterfaceForGuidType()
+        {
+            var connection = new Mock<IDbConnection>();
+            var expected = new[] { Guid.NewGuid(), Guid.NewGuid() };
+
+            connection
+                .SetupDapperAsync(c => c.QueryAsync<Guid>(It.IsAny<string>(), null, null, null, null))
+                .ReturnsAsync(expected);
+
+            var actual = connection.Object.QueryAsync<Guid>("").GetAwaiter().GetResult().ToList();
 
             Assert.That(actual.Count, Is.EqualTo(expected.Length));
             Assert.That(actual, Is.EquivalentTo(expected));
