@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using AutoFixture;
 using Dapper;
 using NUnit.Framework;
 
@@ -13,6 +14,8 @@ namespace Moq.Dapper.Test
     [TestFixture]
     public class DapperQueryAsyncTest
     {
+        private readonly IFixture _fixture = new Fixture();
+        
         [Test]
         public void QueryAsyncGeneric()
         {
@@ -393,5 +396,132 @@ namespace Moq.Dapper.Test
             public byte[] ByteArrayPropery { get; set; }
             public EnumType EnumProperty { get; set; }
         }
+
+        #region Non-Primitive Types
+        
+        [Test]
+        public async Task QueryAsyncGeneric_PremitiveTypes_ExpectSuccess()
+        {
+            await Task.WhenAll(
+                QueryAsyncGeneric(_fixture.CreateMany<bool>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<byte[]>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<byte>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<sbyte>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<short>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Int16>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<ushort>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<UInt16>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<int>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Int32>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<uint>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<UInt32>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<long>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Int64>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<ulong>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<UInt64>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<float>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Single>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<double>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Double>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<decimal>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Decimal>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<char>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Char>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<string>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<String>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<Guid>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<TimeSpan>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<DateTime>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<DateTimeOffset>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<BigInteger>(5)),
+                QueryAsyncGeneric(_fixture.CreateMany<EnumVal>(5)));
+        }
+        
+        [Test]
+        public async Task QueryAsyncGenericUsingDbConnectionInterface_PremitiveTypes_ExpectSuccess()
+        {
+            await Task.WhenAll(
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<bool>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<byte[]>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<byte>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<sbyte>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<short>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Int16>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<ushort>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<UInt16>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<int>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Int32>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<uint>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<UInt32>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<long>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Int64>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<ulong>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<UInt64>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<float>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Single>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<double>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Double>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<decimal>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Decimal>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<char>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Char>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<string>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<String>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<Guid>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<TimeSpan>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<DateTime>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<DateTimeOffset>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<BigInteger>(5)),
+                QueryAsyncGenericUsingDbConnectionInterface(_fixture.CreateMany<EnumVal>(5)));
+        }
+
+        private static async Task QueryAsyncGeneric<T>(IEnumerable<T> expected)
+        {
+            var expectedList = expected.ToList();
+            var connection = new Mock<DbConnection>();
+            
+            connection
+                .SetupDapperAsync(c => c.QueryAsync<T>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(expectedList);
+
+            var actual = (await connection.Object.QueryAsync<T>(string.Empty)).ToList();
+
+            Assert.That(actual.Count, Is.EqualTo(expectedList.Count));
+            Assert.That(actual, Is.EquivalentTo(expectedList));
+        }
+        
+        public enum EnumVal
+        {
+            A,
+            B,
+            C
+        }
+        
+        private static async Task QueryAsyncGenericUsingDbConnectionInterface<T>(IEnumerable<T> expected)
+        {
+            var expectedList = expected.ToList();
+            var connection = new Mock<IDbConnection>();
+
+            connection
+                .SetupDapperAsync(c => c.QueryAsync<T>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDbTransaction>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CommandType?>()))
+                .ReturnsAsync(expectedList);
+
+            var actual = (await connection.Object.QueryAsync<T>(string.Empty)).ToList();
+
+            Assert.That(actual.Count, Is.EqualTo(expectedList.Count));
+            Assert.That(actual, Is.EquivalentTo(expectedList));
+        }
+
+        #endregion
     }
 }

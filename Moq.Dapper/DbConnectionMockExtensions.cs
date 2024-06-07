@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
@@ -13,6 +14,11 @@ namespace Moq.Dapper
 {
     public static class DbConnectionMockExtensions
     {
+        static DbConnectionMockExtensions()
+        {
+            SqlMapper.AddTypeMap(typeof(BigInteger), DbType.String);
+        }
+        
         public static ISetup<DbConnection, Task<TResult>> SetupDapperAsync<TResult>(this Mock<DbConnection> mock, Expression<Func<DbConnection, Task<TResult>>> expression)
         {
             var call = expression.Body as MethodCallExpression;

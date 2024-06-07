@@ -11,37 +11,17 @@ namespace Moq.Dapper
         internal static DataTable ToDataTable(this IEnumerable results, Type tableType)
         {
             var dataTable = new DataTable();
-
-            if (tableType.IsPrimitive || tableType == typeof(string))
+            var type = GetDataColumnType(tableType);
+            
+            if (IsMatchingType(type))
             {
-                dataTable.Columns.Add();
+                dataTable.Columns.Add(new DataColumn(string.Empty, type));
 
                 foreach (var element in results)
-                    dataTable.Rows.Add(element);
+                    dataTable.Rows.Add(element ?? DBNull.Value);
             }
             else
             {
-                bool IsNullable(Type t) =>
-                    t.IsGenericType &&
-                    t.GetGenericTypeDefinition() == typeof(Nullable<>);
-
-                Type GetDataColumnType(Type source) =>
-                    IsNullable(source) ?
-                        Nullable.GetUnderlyingType(source) :
-                        source;
-
-                bool IsMatchingType(Type t) =>
-                    t.IsPrimitive ||
-                    t.IsEnum ||
-                    t == typeof(DateTime) ||
-                    t == typeof(DateTimeOffset) ||
-                    t == typeof(decimal) ||
-                    t == typeof(BigInteger) ||
-                    t == typeof(Guid) ||
-                    t == typeof(string) ||
-                    t == typeof(TimeSpan) ||
-                    t == typeof(byte[]);
-
                 var properties =
                     tableType.GetProperties().
                               Where
@@ -63,6 +43,27 @@ namespace Moq.Dapper
             }
 
             return dataTable;
+            
+            static bool IsNullable(Type t) =>
+                t.IsGenericType &&
+                t.GetGenericTypeDefinition() == typeof(Nullable<>);
+            
+            static Type GetDataColumnType(Type source) =>
+                IsNullable(source) ?
+                    Nullable.GetUnderlyingType(source) :
+                    source;
+            
+            static bool IsMatchingType(Type t) =>
+                t.IsPrimitive ||
+                t.IsEnum ||
+                t == typeof(DateTime) ||
+                t == typeof(DateTimeOffset) ||
+                t == typeof(decimal) ||
+                t == typeof(BigInteger) ||
+                t == typeof(Guid) ||
+                t == typeof(string) ||
+                t == typeof(TimeSpan) ||
+                t == typeof(byte[]);
         }
     }
 }
